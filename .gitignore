@@ -1,0 +1,106 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### IntelliJ IDEA ###
+.idea/modules.xml
+.idea/jarRepositories.xml
+.idea/compiler.xml
+.idea/libraries/
+*.iws
+*.iml
+*.ipr
+.idea/
+
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
+
+### Windows ###
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+### Logs ###
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+### Security ###
+*.pem
+*.key
+*.jks
+*.keystore
+*.truststore
+*.pfx
+*.p12
+*.cer
+*.crt
+*.der
+*.priv
+*.pwd
+*.secret
+*.pwd
+*.pass
+*.password
+*.credentials
+*.env
+*.env.local
+*.env.development
+*.env.test
+*.env.production
+application-*.yml
+application-*.properties
+!application.yml
+!application.properties
+
+### Docker ###
+.docker/
+docker-compose.override.yml
+
+### Maven ###
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+.flattened-pom.xml
+
+### Gradle ###
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+.gradletasknamecache
+
+### Node ###
+node_modules/
+npm-debug.log
+yarn-error.log
+
+### Coverage ###
+coverage/
+.coverage
+.coverage.*
+coverage.xml
+*.cover

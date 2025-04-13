@@ -1,0 +1,38 @@
+spring:
+  datasource:
+    url: jdbc:mysql://${MySQL_DB_URL}:${MySQL_DB_PORT}/zorth?useSSL=false&serverTimezone=UTC
+    username: ${MySQL_DB_USERNAME}
+    password: ${MySQL_DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 30000
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      pool-name: HikariPool-1
+      auto-commit: true
+      connection-test-query: SELECT 1
+  redis:
+    host: ${REDIS_URL}
+    port: ${REDIS_PORT}
+    password: ${REDIS_PASSWORD}
+    database: 0
+    timeout: 2000
+
+mybatis:
+  # 配置 Mapper 文件路径
+  mapper-locations: classpath:mapper/*.xml
+  # 配置实体类别名包
+  type-aliases-package: com.zorth.model
+
+security:
+  jwt:
+    public-paths: /login,/logout,/public/**
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    # Optional, but can sometimes help trace filter ordering issues:
+    # logging.level.org.springframework.web.filter=TRACE 
+

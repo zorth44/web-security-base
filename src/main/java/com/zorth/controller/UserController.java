@@ -3,7 +3,6 @@ package com.zorth.controller;
 import com.zorth.api.request.LoginRequest;
 import com.zorth.api.request.LogoutRequest;
 import com.zorth.service.AuthService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +16,6 @@ public class UserController {
     private final RedisTemplate<String, String> redisTemplate;
     private final AuthService authService;
 
-    @Autowired
     public UserController(RedisTemplate<String, String> redisTemplate,
                           AuthService authService) {
         this.redisTemplate = redisTemplate;

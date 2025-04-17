@@ -30,9 +30,4 @@ security:
   jwt:
     public-paths: /login,/logout,/public/**
 
-logging:
-  level:
-    org.springframework.security: DEBUG
-    # Optional, but can sometimes help trace filter ordering issues:
-    # logging.level.org.springframework.web.filter=TRACE 
 

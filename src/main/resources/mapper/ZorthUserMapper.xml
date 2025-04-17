@@ -7,4 +7,46 @@
         FROM users
         WHERE username = #{username}
     </select>
+
+    <select id="findByGithubId" resultType="com.zorth.model.ZorthUser">
+        SELECT *
+        FROM users
+        WHERE github_id = #{githubId}
+    </select>
+
+    <update id="updateUser" parameterType="com.zorth.model.ZorthUser">
+        UPDATE users 
+        SET github_username = #{githubUsername},
+            email = #{email},
+            avatar_url = #{avatarUrl},
+            last_login_time = #{lastLoginTime},
+            updated_at = #{updatedAt}
+        WHERE github_id = #{githubId}
+    </update>
+
+    <insert id="insertUser" parameterType="com.zorth.model.ZorthUser">
+        INSERT INTO users (
+            username, 
+            github_id, 
+            github_username, 
+            email, 
+            avatar_url,
+            auth_type, 
+            roles, 
+            last_login_time, 
+            created_at, 
+            updated_at
+        ) VALUES (
+            #{username},
+            #{githubId},
+            #{githubUsername},
+            #{email},
+            #{avatarUrl},
+            #{authType},
+            #{roles},
+            #{lastLoginTime},
+            #{createdAt},
+            #{updatedAt}
+        )
+    </insert>
 </mapper>

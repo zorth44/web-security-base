@@ -31,3 +31,8 @@ security:
     public-paths: /login,/logout,/public/**
 
 
+github:
+  client:
+    id: ${GITHUB_CLIENT_ID}
+    secret: ${GITHUB_CLIENT_SECRET}
+    redirect-uri: ${GITHUB_REDIRECT_URI}

@@ -39,10 +39,14 @@ public class UserController {
         return "Logged out successfully";
     }
 
-    @GetMapping("/admin")
-    @PreAuthorize("hasRole('ADMIN')")
-    public String auth(){
-        return "success";
+    @GetMapping("/github/login")
+    public ResponseEntity<String> githubLogin() {
+        // 重定向到 GitHub 授权页面
+    }
+
+    @GetMapping("/github/callback")
+    public ResponseEntity<String> githubCallback(@RequestParam String code) {
+        // 处理 GitHub 回调
     }
 
 }

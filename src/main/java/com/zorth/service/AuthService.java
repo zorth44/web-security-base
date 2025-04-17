@@ -2,6 +2,8 @@ package com.zorth.service;
 
 import com.zorth.api.request.LoginRequest;
 import org.springframework.security.core.AuthenticationException;
+// import com.zorth.model.GitHubUserInfo;
+// import com.zorth.model.ZorthUser;
 
 public interface AuthService {
 
@@ -13,4 +15,8 @@ public interface AuthService {
      * @throws AuthenticationException if authentication fails.
      */
     String login(LoginRequest loginRequest) throws AuthenticationException;
+
+    // String handleGitHubLogin(String code) throws AuthenticationException;
+    // GitHubUserInfo getGitHubUserInfo(String accessToken);
+    // ZorthUser createOrUpdateGitHubUser(GitHubUserInfo githubUserInfo);
 } 

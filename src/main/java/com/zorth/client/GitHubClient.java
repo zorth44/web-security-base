@@ -8,6 +8,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
@@ -17,6 +19,7 @@ public class GitHubClient {
     private final String clientId;
     private final String clientSecret;
     private final String redirectUri;
+    private static final Logger logger = LoggerFactory.getLogger(GitHubClient.class);
 
     public GitHubClient(RestTemplate restTemplate,
                        @Value("${github.client.id}") String clientId,
@@ -83,5 +86,29 @@ public class GitHubClient {
                 .queryParam("scope", "user:email")
                 .build()
                 .toUriString();
+    }
+
+    /**
+     * 验证 GitHub OAuth2 令牌
+     */
+    public String validateToken(String accessToken) {
+        String url = "https://api.github.com/user";
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + accessToken);
+        
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        
+        try {
+            ResponseEntity<Map> response = restTemplate.exchange(
+                url, HttpMethod.GET, entity, Map.class);
+                
+            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+                return (String) response.getBody().get("login");  // 返回 GitHub 用户名
+            }
+        } catch (Exception e) {
+            logger.error("Failed to validate GitHub token: ", e);
+        }
+        return null;
     }
 } 

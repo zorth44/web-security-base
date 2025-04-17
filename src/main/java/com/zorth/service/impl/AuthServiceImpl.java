@@ -131,4 +131,17 @@ public class AuthServiceImpl implements AuthService {
             return newUser;
         }
     }
+
+    @Override
+    public String validateGitHubToken(String token) {
+        try {
+            GitHubUserInfo userInfo = gitHubClient.getUserInfo(token);
+            if (userInfo != null) {
+                return userInfo.getLogin();
+            }
+        } catch (Exception e) {
+            logger.error("Failed to validate GitHub token: ", e);
+        }
+        return null;
+    }
 } 

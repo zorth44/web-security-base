@@ -1,4 +1,13 @@
 spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            client-id: ${GITHUB_CLIENT_ID}
+            client-secret: ${GITHUB_CLIENT_SECRET}
+            scope: user:email
+            redirect-uri: ${GITHUB_REDIRECT_URI}
   datasource:
     url: jdbc:mysql://${MySQL_DB_URL}:${MySQL_DB_PORT}/zorth?useSSL=false&serverTimezone=UTC
     username: ${MySQL_DB_USERNAME}

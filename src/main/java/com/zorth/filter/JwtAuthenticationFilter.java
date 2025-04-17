@@ -1,5 +1,6 @@
 package com.zorth.filter;
 
+import com.zorth.service.AuthService;
 import com.zorth.service.CustomUserDetailsService;
 import com.zorth.util.JwtTokenUtil;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -25,13 +26,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final RedisTemplate<String, String> redisTemplate;
     private final CustomUserDetailsService customUserDetailsService;
     private final List<String> publicPaths;
+    private final AuthService authService;
 
     public JwtAuthenticationFilter(RedisTemplate<String, String> redisTemplate,
                                  CustomUserDetailsService customUserDetailsService,
-                                 List<String> publicPaths) {
+                                 List<String> publicPaths,
+                                 AuthService authService) {
         this.redisTemplate = redisTemplate;
         this.customUserDetailsService = customUserDetailsService;
         this.publicPaths = publicPaths;
+        this.authService = authService;
     }
 
     @Override
@@ -55,49 +59,40 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // Get the token from the request header
         String authHeader = request.getHeader("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        if (authHeader == null) {
             filterChain.doFilter(request, response);
             return;
         }
-
-        String token = authHeader.substring(7);
-        String username = null;
 
         try {
-            // Validate token and get username
-            if (!JwtTokenUtil.isTokenExpired(token)) {
-                username = JwtTokenUtil.getUsernameFromToken(token);
-                
-                // Check if token exists in Redis
-                String storedToken = redisTemplate.opsForValue().get(username);
-                if (storedToken == null || !storedToken.equals(token)) {
-                    logger.debug("Token not found in Redis or doesn't match");
-                    filterChain.doFilter(request, response);
-                    return;
+            if (authHeader.startsWith("Bearer ")) {
+                // Handle JWT token
+                String token = authHeader.substring(7);
+                if (!JwtTokenUtil.isTokenExpired(token)) {
+                    String username = JwtTokenUtil.getUsernameFromToken(token);
+                    String storedToken = redisTemplate.opsForValue().get(username);
+                    if (storedToken != null && storedToken.equals(token)) {
+                        UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
+                        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                                userDetails, null, userDetails.getAuthorities());
+                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                    }
                 }
-            } else {
-                logger.debug("Token has expired");
-                filterChain.doFilter(request, response);
-                return;
+            } else if (authHeader.startsWith("OAuth ")) {
+                // Handle GitHub OAuth2 token
+                String token = authHeader.substring(6);
+                String username = authService.validateGitHubToken(token);
+                if (username != null) {
+                    UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities());
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
             }
         } catch (Exception e) {
-            logger.error("Error processing JWT token: ", e);
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        // If we have a valid username, load user details and set authentication
-        if (username != null) {
-            try {
-                UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                logger.debug("Authentication successful for user: {}", username);
-            } catch (Exception e) {
-                logger.error("Error loading user details: ", e);
-            }
+            logger.error("Error processing authentication token: ", e);
         }
 
         filterChain.doFilter(request, response);

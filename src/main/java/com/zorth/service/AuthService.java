@@ -43,5 +43,11 @@ public interface AuthService {
      */
     ZorthUser createOrUpdateGitHubUser(GitHubUserInfo githubUserInfo);
 
+    /**
+     * 验证 GitHub OAuth2 令牌
+     * @param token GitHub OAuth2 令牌
+     * @return GitHub 用户名，如果验证失败则返回 null
+     */
+    String validateGitHubToken(String token);
 
 } 

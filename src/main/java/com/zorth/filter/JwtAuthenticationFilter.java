@@ -66,29 +66,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             if (authHeader.startsWith("Bearer ")) {
-                // Handle JWT token
                 String token = authHeader.substring(7);
-                if (!JwtTokenUtil.isTokenExpired(token)) {
-                    String username = JwtTokenUtil.getUsernameFromToken(token);
-                    String storedToken = redisTemplate.opsForValue().get(username);
-                    if (storedToken != null && storedToken.equals(token)) {
-                        UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
-                        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                                userDetails, null, userDetails.getAuthorities());
-                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                String tokenType = JwtTokenUtil.getTokenType(token);
+                
+                if (tokenType != null) {
+                    switch (tokenType) {
+                        case "JWT":
+                            handleJwtToken(token, request);
+                            break;
+                        case "OAUTH":
+                            handleOAuthToken(token, request);
+                            break;
+                        default:
+                            logger.warn("Unknown token type: {}", tokenType);
                     }
-                }
-            } else if (authHeader.startsWith("OAuth ")) {
-                // Handle GitHub OAuth2 token
-                String token = authHeader.substring(6);
-                String username = authService.validateGitHubToken(token);
-                if (username != null) {
-                    UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
-                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.getAuthorities());
-                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                } else {
+                    logger.warn("Token type not found in token");
                 }
             }
         } catch (Exception e) {
@@ -107,4 +100,32 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return requestPath.equals(path);
         });
     }
+
+    private void handleJwtToken(String token, HttpServletRequest request) {
+        if (!JwtTokenUtil.isTokenExpired(token)) {
+            String username = JwtTokenUtil.getUsernameFromToken(token);
+            String storedToken = redisTemplate.opsForValue().get(username);
+            if (storedToken != null && storedToken.equals(token)) {
+                authenticateUser(username, request);
+            }
+        }
+    }
+    
+    private void handleOAuthToken(String token, HttpServletRequest request) {
+        String username = authService.validateGitHubToken(token);
+        if (username != null) {
+            authenticateUser(username, request);
+        }
+    }
+
+    private void authenticateUser(String username, HttpServletRequest request) {
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
+        UsernamePasswordAuthenticationToken authentication = 
+            new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities());
+        authentication.setDetails(
+            new WebAuthenticationDetailsSource().buildDetails(request));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
+    
 }

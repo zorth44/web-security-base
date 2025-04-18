@@ -63,27 +63,27 @@ public class SecurityConfig {
                     .anyRequest().authenticated()
                 )
                 // Configure OAuth2 login endpoints
-                .oauth2Login(oauth2 -> oauth2
-                    .authorizationEndpoint(authorization -> authorization
-                        .baseUri("/api/auth/github/login")
-                    )
-                    .redirectionEndpoint(redirection -> redirection
-                        .baseUri("/api/auth/github/callback")
-                    )
-                    .successHandler((request, response, authentication) -> {
-                        // Handle OAuth2 login success
-                        String code = request.getParameter("code");
-                        try {
-                            // Use our existing AuthService to handle GitHub login
-                            String token = authService.handleGitHubLogin(code);
-                            response.setContentType("application/json");
-                            response.getWriter().write("{\"token\":\"" + token + "\"}");
-                        } catch (Exception e) {
-                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                            response.getWriter().write("{\"error\":\"Authentication failed\"}");
-                        }
-                    })
-                )
+                // .oauth2Login(oauth2 -> oauth2
+                //     .authorizationEndpoint(authorization -> authorization
+                //         .baseUri("/api/auth/github/login")
+                //     )
+                //     .redirectionEndpoint(redirection -> redirection
+                //         .baseUri("/api/auth/github/callback")
+                //     )
+                //     .successHandler((request, response, authentication) -> {
+                //         // Handle OAuth2 login success
+                //         String code = request.getParameter("code");
+                //         try {
+                //             // Use our existing AuthService to handle GitHub login
+                //             String token = authService.handleGitHubLogin(code);
+                //             response.setContentType("application/json");
+                //             response.getWriter().write("{\"token\":\"" + token + "\"}");
+                //         } catch (Exception e) {
+                //             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                //             response.getWriter().write("{\"error\":\"Authentication failed\"}");
+                //         }
+                //     })
+                // )
                 // Add JWT filter for all authentication
                 .addFilterBefore(new JwtAuthenticationFilter(redisTemplate, customUserDetailsService, publicPaths, authService), 
                                UsernamePasswordAuthenticationFilter.class);

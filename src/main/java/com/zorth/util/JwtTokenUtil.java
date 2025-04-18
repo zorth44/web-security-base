@@ -20,13 +20,23 @@ public class JwtTokenUtil {
     private static final SecretKey KEY = Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
 
     // 生成JWT
-    public static String generateToken(String username) {
+    public static String generateToken(String username, String tokenType) {
         return Jwts.builder()
+                .claim("tokenType", tokenType)
                 .subject(username) // 设置主题
                 .issuedAt(new Date()) // 签发时间
                 .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME)) // 过期时间
                 .signWith(KEY, ALGORITHM) // 签名
                 .compact();
+    }
+
+    public static String getTokenType(String token) {
+        return Jwts.parser()
+                .verifyWith(KEY)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("tokenType", String.class);
     }
 
     // 解析JWT 

@@ -22,9 +22,9 @@ public class GitHubClient {
     private static final Logger logger = LoggerFactory.getLogger(GitHubClient.class);
 
     public GitHubClient(RestTemplate restTemplate,
-                       @Value("${github.client.id}") String clientId,
-                       @Value("${github.client.secret}") String clientSecret,
-                       @Value("${github.redirect.uri}") String redirectUri) {
+                       @Value("${spring.security.oauth2.client.registration.github.client-id}") String clientId,
+                       @Value("${spring.security.oauth2.client.registration.github.client-secret}") String clientSecret,
+                       @Value("${spring.security.oauth2.client.registration.github.redirect-uri}") String redirectUri) {
         this.restTemplate = restTemplate;
         this.clientId = clientId;
         this.clientSecret = clientSecret;
@@ -64,6 +64,7 @@ public class GitHubClient {
         
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + accessToken);
+        headers.set("Accept", "application/json");
         
         HttpEntity<String> entity = new HttpEntity<>(headers);
         

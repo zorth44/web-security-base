@@ -45,6 +45,12 @@ public class UserController {
         return "success";
     }
 
+    @GetMapping("/user")
+    @PreAuthorize("hasRole('USER')")
+    public String user(){
+        return "success";
+    }
+
     
 
 }

@@ -54,7 +54,7 @@ public class AuthServiceImpl implements AuthService {
             }
 
             // Generate token
-            String token = JwtTokenUtil.generateToken(loginRequest.getUsername());
+            String token = JwtTokenUtil.generateToken(loginRequest.getUsername(), "JWT");
             
             // Store token in Redis
             redisTemplate.opsForValue().set(loginRequest.getUsername(), token);
@@ -81,7 +81,7 @@ public class AuthServiceImpl implements AuthService {
             ZorthUser user = createOrUpdateGitHubUser(githubUserInfo);
             
             // 4. Generate JWT token
-            String token = JwtTokenUtil.generateToken(user.getUsername());
+            String token = JwtTokenUtil.generateToken(user.getUsername(), "OAUTH");
             
             // 5. Store token in Redis
             redisTemplate.opsForValue().set(user.getUsername(), token);
@@ -103,7 +103,9 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public ZorthUser createOrUpdateGitHubUser(GitHubUserInfo githubUserInfo) {
         // 1. Check if user exists by GitHub ID
+        logger.info("Looking up user with GitHub ID: {}", githubUserInfo.getId());
         ZorthUser existingUser = zorthUserMapper.findByGithubId(githubUserInfo.getId());
+        logger.info("Found existing user: {}", existingUser);
         
         if (existingUser != null) {
             // Update existing user
@@ -116,6 +118,7 @@ public class AuthServiceImpl implements AuthService {
             return existingUser;
         } else {
             // Create new user
+            logger.info("Creating new user for GitHub ID: {}", githubUserInfo.getId());
             ZorthUser newUser = new ZorthUser();
             newUser.setUsername(githubUserInfo.getLogin());
             newUser.setGithubId(githubUserInfo.getId());
@@ -124,6 +127,7 @@ public class AuthServiceImpl implements AuthService {
             newUser.setAvatarUrl(githubUserInfo.getAvatar_url());
             newUser.setAuthType("GITHUB");
             newUser.setRoles("USER"); // Default role
+            newUser.setPassword(passwordEncoder.encode("github_" + githubUserInfo.getId() + "_" + System.currentTimeMillis()));
             newUser.setLastLoginTime(LocalDateTime.now());
             newUser.setCreatedAt(LocalDateTime.now());
             newUser.setUpdatedAt(LocalDateTime.now());
@@ -135,9 +139,12 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public String validateGitHubToken(String token) {
         try {
-            GitHubUserInfo userInfo = gitHubClient.getUserInfo(token);
-            if (userInfo != null) {
-                return userInfo.getLogin();
+            // GitHubUserInfo userInfo = gitHubClient.getUserInfo(token);
+            // if (userInfo != null) {
+            //     return userInfo.getLogin();
+            // }
+            if (!JwtTokenUtil.isTokenExpired(token)) {
+                return JwtTokenUtil.getUsernameFromToken(token);
             }
         } catch (Exception e) {
             logger.error("Failed to validate GitHub token: ", e);
